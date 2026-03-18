@@ -1,6 +1,7 @@
 import os
 
-from lib.search_utils import DEFAULT_ALPHA, RESULTS_LIMIT, DOCUMENT_PREVIEW_LENGTH, load_movies, DEFAULT_K
+from lib.query_enhancement import enhance_query
+from lib.search_utils import DEFAULT_ALPHA, ENHANCE_METHODS, RESULTS_LIMIT, DOCUMENT_PREVIEW_LENGTH, load_movies, DEFAULT_K
 
 from .keyword_search import InvertedIndex
 from .chunked_semantic_search import ChunkedSemanticSearch
@@ -122,9 +123,13 @@ def weighted_search_command(query, alpha=DEFAULT_ALPHA, limit=RESULTS_LIMIT):
         print(f"BM25: {res['bm25']:.4f}, Semantic: {res['semantic']:.4f}")
         print(res["document"][:DOCUMENT_PREVIEW_LENGTH])
 
-def rrf_search_command(query, k=DEFAULT_K, limit=10):
+def rrf_search_command(query, k=DEFAULT_K, limit=10, enhance=""):
     documents = load_movies()
     hybrid_search = HybridSearch(documents)
+    if enhance in ENHANCE_METHODS:
+        enhanced_query = enhance_query(query, enhance)
+        print(f"Enhanced query ({enhance}): '{query}' -> '{enhanced_query}'\n")
+        query = enhanced_query
     results = hybrid_search.rrf_search(query, k, limit)
 
     for i, res in enumerate(results, 1):

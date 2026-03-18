@@ -24,6 +24,8 @@ MOVIE_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "movie_embeddings.npy")
 CHUNK_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "chunk_embeddings.npy")
 CHUNK_METADATA_PATH = os.path.join(CACHE_DIR, "chunk_metadata.json")
 
+ENHANCE_METHODS = ['spell', 'rewrite', 'expand']
+
 
 
 def load_movies() -> list[dict]:

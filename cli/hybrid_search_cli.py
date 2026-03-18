@@ -1,6 +1,6 @@
 import argparse
 
-from lib.search_utils import DEFAULT_ALPHA, DEFAULT_K, RESULTS_LIMIT
+from lib.search_utils import DEFAULT_ALPHA, DEFAULT_K, ENHANCE_METHODS, RESULTS_LIMIT
 from lib.hybrid_search import normalize, weighted_search_command, rrf_search_command
 
 
@@ -20,6 +20,12 @@ def main() -> None:
     rrf_search_parser.add_argument("query", type=str, help="Search query")
     rrf_search_parser.add_argument("--k", nargs="?", type=int, default=DEFAULT_K, help="K value")
     rrf_search_parser.add_argument("--limit", nargs="?", type=int, default=RESULTS_LIMIT, help="Results limit")
+    rrf_search_parser.add_argument(
+        "--enhance",
+        type=str,
+        choices=ENHANCE_METHODS,
+        help="Query enhancement method",
+    )
 
 
     args = parser.parse_args()
@@ -32,7 +38,7 @@ def main() -> None:
         case "weighted-search":
             weighted_search_command(args.query, args.alpha, args.limit)
         case "rrf-search":
-            rrf_search_command(query=args.query, k=args.k, limit=args.limit)
+            rrf_search_command(query=args.query, k=args.k, limit=args.limit, enhance=args.enhance)
 
         case _:
             parser.print_help()
