@@ -81,3 +81,4 @@ def enhance_query(query: str, method: Optional[str] = None) -> str:
             return expand_query(query)
         case _:
             return query
+

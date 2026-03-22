@@ -1,7 +1,9 @@
+import time
 import os
 
+from lib.results_rerank import rerank_results
 from lib.query_enhancement import enhance_query
-from lib.search_utils import DEFAULT_ALPHA, ENHANCE_METHODS, RESULTS_LIMIT, DOCUMENT_PREVIEW_LENGTH, load_movies, DEFAULT_K
+from lib.search_utils import DEFAULT_ALPHA, ENHANCE_METHODS, RERANK_METHODS, RESULTS_LIMIT, DOCUMENT_PREVIEW_LENGTH, SEARCH_MULTIPLIER, load_movies, DEFAULT_K
 
 from .keyword_search import InvertedIndex
 from .chunked_semantic_search import ChunkedSemanticSearch
@@ -38,6 +40,7 @@ class HybridSearch:
             res["score"] = bm25_normalized[i]
             if res["id"] not in combined:
                 combined[res["id"]] = {
+                    "id": res["id"],
                     "document": res["document"],
                     "title": res["title"],
                     "bm25": res["score"],
@@ -48,6 +51,7 @@ class HybridSearch:
             res["score"] = semantic_normalized[i]
             if res["id"] not in combined:
                 combined[res["id"]] = {
+                    "id": res["id"],
                     "document": res["document"],
                     "title": res["title"],
                     "bm25": 0,
@@ -61,13 +65,14 @@ class HybridSearch:
 
         return sorted(combined.values(), key=lambda x: x["hybrid_score"], reverse=True)[:limit]
 
-    def rrf_search(self, query, k, limit=10):
+    def rrf_search(self, query, k, limit=10) -> list[dict]:
         bm25_results, semantic_results = self.__get_results(query, limit)
         combined = {}
 
         for i, res in enumerate(bm25_results, 1):
             if res["id"] not in combined:
                 combined[res["id"]] = {
+                    "id": res["id"],
                     "document": res["document"],
                     "title": res["title"],
                     "bm25": i,
@@ -79,6 +84,7 @@ class HybridSearch:
             # res["score"] = semantic_normalized[i]
             if res["id"] not in combined:
                 combined[res["id"]] = {
+                    "id": res["id"],
                     "document": res["document"],
                     "title": res["title"],
                     "bm25": -1,
@@ -123,18 +129,34 @@ def weighted_search_command(query, alpha=DEFAULT_ALPHA, limit=RESULTS_LIMIT):
         print(f"BM25: {res['bm25']:.4f}, Semantic: {res['semantic']:.4f}")
         print(res["document"][:DOCUMENT_PREVIEW_LENGTH])
 
-def rrf_search_command(query, k=DEFAULT_K, limit=10, enhance=""):
+def rrf_search_command(query, k=DEFAULT_K, limit=10, enhance="", rerank="") -> list[dict]:
+    original_limit = limit
     documents = load_movies()
     hybrid_search = HybridSearch(documents)
     if enhance in ENHANCE_METHODS:
         enhanced_query = enhance_query(query, enhance)
         print(f"Enhanced query ({enhance}): '{query}' -> '{enhanced_query}'\n")
         query = enhanced_query
+    if rerank in RERANK_METHODS:
+        limit *= SEARCH_MULTIPLIER
+
     results = hybrid_search.rrf_search(query, k, limit)
+
+    if rerank in RERANK_METHODS:
+        print(f"Re-ranking top {original_limit} results using {rerank} method...")
+        results = rerank_results(query, results, rerank, original_limit)
 
     for i, res in enumerate(results, 1):
         print(f"{i}. {res['title']}")
+        if "rerank_score" in res:
+            print(f"Re-rank Score: {res['rerank_score']:.3f}/10")
+        if "rerank_rank" in res:
+            print(f"Re-rank Rank: {res['rerank_rank']}")
+        if "cross_encoder_score" in res:
+            print(f"Cross Encoder Score: {res['cross_encoder_score']:.3f}")
         print(f"RRF Score: {res['rrf']:.4f}")
         print(f"BM25 Rank: {res['bm25']:.4f}, Semantic Rank: {res['semantic']:.4f}")
         print(res["document"][:DOCUMENT_PREVIEW_LENGTH])
+
+    return results
 

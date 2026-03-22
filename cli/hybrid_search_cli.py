@@ -1,6 +1,6 @@
 import argparse
 
-from lib.search_utils import DEFAULT_ALPHA, DEFAULT_K, ENHANCE_METHODS, RESULTS_LIMIT
+from lib.search_utils import DEFAULT_ALPHA, DEFAULT_K, ENHANCE_METHODS, RESULTS_LIMIT, RERANK_METHODS
 from lib.hybrid_search import normalize, weighted_search_command, rrf_search_command
 
 
@@ -26,6 +26,12 @@ def main() -> None:
         choices=ENHANCE_METHODS,
         help="Query enhancement method",
     )
+    rrf_search_parser.add_argument(
+        "--rerank-method",
+        type=str,
+        choices=RERANK_METHODS,
+        help="Results re-ranking method",
+    )
 
 
     args = parser.parse_args()
@@ -38,7 +44,7 @@ def main() -> None:
         case "weighted-search":
             weighted_search_command(args.query, args.alpha, args.limit)
         case "rrf-search":
-            rrf_search_command(query=args.query, k=args.k, limit=args.limit, enhance=args.enhance)
+            rrf_search_command(query=args.query, k=args.k, limit=args.limit, enhance=args.enhance, rerank=args.rerank_method)
 
         case _:
             parser.print_help()

@@ -14,6 +14,7 @@ SCORE_PRECISION = 3
 DOCUMENT_PREVIEW_LENGTH = 100
 DEFAULT_ALPHA = 0.5
 DEFAULT_K = 60
+SEARCH_MULTIPLIER = 5
 
 DEFAULT_CHUNKS_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 0
@@ -25,6 +26,7 @@ CHUNK_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "chunk_embeddings.npy")
 CHUNK_METADATA_PATH = os.path.join(CACHE_DIR, "chunk_metadata.json")
 
 ENHANCE_METHODS = ['spell', 'rewrite', 'expand']
+RERANK_METHODS = ['individual', 'batch', 'cross_encoder']
 
 
 
