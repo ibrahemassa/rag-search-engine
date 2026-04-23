@@ -1,6 +1,7 @@
 import time
 import os
 
+from lib.llm_utils import llm_results_evaluation
 from lib.results_rerank import rerank_results
 from lib.query_enhancement import enhance_query
 from lib.search_utils import DEFAULT_ALPHA, ENHANCE_METHODS, RERANK_METHODS, RESULTS_LIMIT, DOCUMENT_PREVIEW_LENGTH, SEARCH_MULTIPLIER, load_movies, DEFAULT_K
@@ -129,13 +130,14 @@ def weighted_search_command(query, alpha=DEFAULT_ALPHA, limit=RESULTS_LIMIT):
         print(f"BM25: {res['bm25']:.4f}, Semantic: {res['semantic']:.4f}")
         print(res["document"][:DOCUMENT_PREVIEW_LENGTH])
 
-def rrf_search_command(query, k=DEFAULT_K, limit=10, enhance="", rerank="") -> list[dict]:
+def rrf_search_command(query, k=DEFAULT_K, limit=10, enhance="", rerank="", print_results=False, debug=False, evaluate=False) -> list[dict]:
+    if debug: print(f"Debug - Orginal query: {query}")
     original_limit = limit
     documents = load_movies()
     hybrid_search = HybridSearch(documents)
     if enhance in ENHANCE_METHODS:
         enhanced_query = enhance_query(query, enhance)
-        print(f"Enhanced query ({enhance}): '{query}' -> '{enhanced_query}'\n")
+        if debug: print(f"Debug - Enhanced query ({enhance}): '{query}' -> '{enhanced_query}'\n")
         query = enhanced_query
     if rerank in RERANK_METHODS:
         limit *= SEARCH_MULTIPLIER
@@ -144,19 +146,31 @@ def rrf_search_command(query, k=DEFAULT_K, limit=10, enhance="", rerank="") -> l
 
     if rerank in RERANK_METHODS:
         print(f"Re-ranking top {original_limit} results using {rerank} method...")
+        if debug:
+            print("Debug - original results:")
+            for i, res in enumerate(results, 1):
+                print(f"Debug - {i}. {res['title']}")
         results = rerank_results(query, results, rerank, original_limit)
 
-    for i, res in enumerate(results, 1):
-        print(f"{i}. {res['title']}")
-        if "rerank_score" in res:
-            print(f"Re-rank Score: {res['rerank_score']:.3f}/10")
-        if "rerank_rank" in res:
-            print(f"Re-rank Rank: {res['rerank_rank']}")
-        if "cross_encoder_score" in res:
-            print(f"Cross Encoder Score: {res['cross_encoder_score']:.3f}")
-        print(f"RRF Score: {res['rrf']:.4f}")
-        print(f"BM25 Rank: {res['bm25']:.4f}, Semantic Rank: {res['semantic']:.4f}")
-        print(res["document"][:DOCUMENT_PREVIEW_LENGTH])
+    if print_results:
+        for i, res in enumerate(results, 1):
+            print(f"{i}. {res['title']}")
+            if "rerank_score" in res:
+                print(f"Re-rank Score: {res['rerank_score']:.3f}/10")
+            if "rerank_rank" in res:
+                print(f"Re-rank Rank: {res['rerank_rank']}")
+            if "cross_encoder_score" in res:
+                print(f"Cross Encoder Score: {res['cross_encoder_score']:.3f}")
+            print(f"RRF Score: {res['rrf']:.4f}")
+            print(f"BM25 Rank: {res['bm25']:.4f}, Semantic Rank: {res['semantic']:.4f}")
+            print(res["document"][:DOCUMENT_PREVIEW_LENGTH])
+            print("")
+
+    if evaluate:
+        formatted_results = [res["title"] for res in results]
+        scales = llm_results_evaluation(query, formatted_results) 
+        for i, res in enumerate(results, 1):
+            print(f"{i}. {res['title']}: {scales[i - 1]}/3")
 
     return results
 

@@ -32,6 +32,9 @@ def main() -> None:
         choices=RERANK_METHODS,
         help="Results re-ranking method",
     )
+    rrf_search_parser.add_argument("--no-print", action="store_false", help="Don't print the results to stdout")
+    rrf_search_parser.add_argument("--debug", action="store_true", help="Show debug prints")
+    rrf_search_parser.add_argument("--evaluate", action="store_true", help="use LLM to evalute results")
 
 
     args = parser.parse_args()
@@ -44,7 +47,7 @@ def main() -> None:
         case "weighted-search":
             weighted_search_command(args.query, args.alpha, args.limit)
         case "rrf-search":
-            rrf_search_command(query=args.query, k=args.k, limit=args.limit, enhance=args.enhance, rerank=args.rerank_method)
+            rrf_search_command(query=args.query, k=args.k, limit=args.limit, enhance=args.enhance, rerank=args.rerank_method, print_results=args.no_print, debug=args.debug, evaluate=args.evaluate)
 
         case _:
             parser.print_help()

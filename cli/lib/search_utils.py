@@ -15,6 +15,7 @@ DOCUMENT_PREVIEW_LENGTH = 100
 DEFAULT_ALPHA = 0.5
 DEFAULT_K = 60
 SEARCH_MULTIPLIER = 5
+DEFAULT_EVALUATION_K = 5
 
 DEFAULT_CHUNKS_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 0
@@ -24,6 +25,8 @@ CHUNK_REGEX = r"(?<=[.!?])\s+"
 MOVIE_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "movie_embeddings.npy")
 CHUNK_EMBEDDINGS_PATH = os.path.join(CACHE_DIR, "chunk_embeddings.npy")
 CHUNK_METADATA_PATH = os.path.join(CACHE_DIR, "chunk_metadata.json")
+
+GOLDEN_DATASET_PATH = os.path.join(PROJECT_ROOT, "data", "golden_dataset.json")
 
 ENHANCE_METHODS = ['spell', 'rewrite', 'expand']
 RERANK_METHODS = ['individual', 'batch', 'cross_encoder']
