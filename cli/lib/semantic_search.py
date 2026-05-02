@@ -6,7 +6,7 @@ import os
 
 from sentence_transformers.util import semantic_search
 
-from .search_utils import CACHE_DIR, CHUNK_REGEX, DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNKS_SIZE, DEFAULT_MAX_CHUNK_SIZE, MOVIE_EMBEDDINGS_PATH, RESULTS_LIMIT, load_movies
+from .search_utils import CACHE_DIR, CHUNK_REGEX, DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNKS_SIZE, DEFAULT_MAX_CHUNK_SIZE, MOVIE_EMBEDDINGS_PATH, RESULTS_LIMIT, load_movies, cosine_similarity
 
 class SemanticSearch:
     def __init__(self, model_name="all-MiniLM-L6-v2") -> None:
@@ -69,15 +69,15 @@ class SemanticSearch:
         } for doc in sorted(similarities, reverse=True, key=lambda x: x[0])[:limit]]
 
 
-def cosine_similarity(vec1, vec2) -> float:
-    dot_product = np.dot(vec1, vec2)
-    norm1 = np.linalg.norm(vec1)
-    norm2 = np.linalg.norm(vec2)
-
-    if norm1 == 0 or norm2 == 0:
-        return 0.0
-
-    return dot_product / (norm1 * norm2)
+# def cosine_similarity(vec1, vec2) -> float:
+#     dot_product = np.dot(vec1, vec2)
+#     norm1 = np.linalg.norm(vec1)
+#     norm2 = np.linalg.norm(vec2)
+#
+#     if norm1 == 0 or norm2 == 0:
+#         return 0.0
+#
+#     return dot_product / (norm1 * norm2)
 
 def verify_model() -> None:
     ss = SemanticSearch()

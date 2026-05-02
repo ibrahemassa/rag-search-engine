@@ -1,4 +1,5 @@
 from typing import Any
+import numpy as np
 import json
 import os
 
@@ -67,3 +68,12 @@ def format_search_result(
         "metadata": metadata if metadata else {},
     }
 
+def cosine_similarity(vec1, vec2) -> float:
+    dot_product = np.dot(vec1, vec2)
+    norm1 = np.linalg.norm(vec1)
+    norm2 = np.linalg.norm(vec2)
+
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+
+    return dot_product / (norm1 * norm2)
